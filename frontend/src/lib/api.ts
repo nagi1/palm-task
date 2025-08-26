@@ -11,7 +11,18 @@ export async function fetchTasks(): Promise<Task[]> {
 	if (!res.ok) throw new Error(`Failed to load tasks: ${res.status}`);
 
 	const body = await res.json();
-	const data = Array.isArray(body) ? body : body.data;
 
-	return data as Task[];
+	return Array.isArray(body) ? (body as Task[]) : (body.data as Task[]);
+}
+
+export async function createTask(task: Omit<Task, 'id'>): Promise<Task> {
+	const res = await fetch(`${BASE_URL}/api/tasks`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+		body: JSON.stringify(task),
+	});
+
+	if (!res.ok) throw new Error(`Failed to create task: ${res.status}`);
+
+	return res.json() as Promise<Task>;
 }
