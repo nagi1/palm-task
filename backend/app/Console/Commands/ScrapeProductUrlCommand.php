@@ -36,7 +36,6 @@ class ScrapeProductUrlCommand extends Command
         return $results['failures'] > 0 ? self::FAILURE : self::SUCCESS;
     }
 
-    /* ------------------------------- Input Checks ------------------------------- */
     private function hasInput(): bool
     {
         return (bool) ($this->argument('url') || $this->option('file'));
@@ -114,7 +113,6 @@ class ScrapeProductUrlCommand extends Command
         usleep(250_000); // 250ms
     }
 
-    /* --------------------------------- Reporting -------------------------------- */
     private function reportSummary(array $results, int $total): void
     {
         $this->newLine();
