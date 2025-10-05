@@ -11,7 +11,6 @@ class Kernel extends ConsoleKernel
     {
         $path = storage_path('app/product_urls.txt');
         if (is_file($path)) {
-            // scrape every hour; adjust as needed
             $schedule->command('products:scrape-url --file='.$path)->hourly()->onOneServer();
         }
     }
