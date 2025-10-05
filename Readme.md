@@ -166,3 +166,7 @@ npm run build
 Proxy service:
 ```fish
 go run main.go
+
+# or run the built binary
+cd ./proxy-service && ./proxy-service
+```
