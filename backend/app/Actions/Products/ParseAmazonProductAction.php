@@ -13,7 +13,7 @@ class ParseAmazonProductAction
     {
         $crawler = new Crawler($html);
         $title = $this->text($crawler, '#productTitle');
-        $priceText = $this->text($crawler, '#corePriceDisplay_desktop_feature_div span.a-offscreen');
+        $priceText = $this->resolveAmazonPriceText($crawler, $html);
         $price = $this->normalizePrice($priceText);
         $imageUrl = $this->attr($crawler, '#imgTagWrapperId img', 'data-old-hires')
             ?: $this->attr($crawler, '#imgTagWrapperId img', 'src');
@@ -31,6 +31,56 @@ class ParseAmazonProductAction
                 'price_text' => $priceText,
             ],
         ];
+    }
+
+    private function resolveAmazonPriceText(Crawler $crawler, string $html): ?string
+    {
+        $primary = $this->text($crawler, '#corePriceDisplay_desktop_feature_div span.a-offscreen');
+        if ($primary) {
+            return $primary;
+        }
+
+        $fallback = $this->firstMatchingText($crawler, [
+            '#apex_desktop span.a-offscreen',
+            '#corePrice_feature_div span.a-offscreen',
+            '#priceblock_ourprice',
+            '#priceblock_dealprice',
+            'span.a-price.aok-align-center span.a-offscreen',
+        ]);
+        if ($fallback) {
+            return $fallback;
+        }
+
+        $meta = $this->attr($crawler, 'meta[property="og:price:amount"]', 'content');
+        if ($meta) {
+            return $meta;
+        }
+
+        $assembled = $this->assembleAmazonFragmentedPrice($crawler);
+        if ($assembled) {
+            return $assembled;
+        }
+
+        return $this->regexAmazonPrice($html);
+    }
+
+    private function assembleAmazonFragmentedPrice(Crawler $crawler): ?string
+    {
+        $whole = $this->text($crawler, 'span.a-price-whole');
+        if (! $whole) {
+            return null;
+        }
+        $fraction = $this->text($crawler, 'span.a-price-fraction');
+        $wholeClean = rtrim($whole, '.');
+
+        return $wholeClean.'.'.($fraction ?: '00');
+    }
+
+    private function regexAmazonPrice(string $html): ?string
+    {
+        return preg_match('/(?:USD|US\$|\$|EUR|€|GBP|£|AED)\s?([0-9]{1,3}(?:[,.][0-9]{3})*(?:[\.,][0-9]{2})?)/', $html, $m)
+            ? $m[0]
+            : null;
     }
 
     private function extractAsin(Crawler $crawler, string $html): ?string

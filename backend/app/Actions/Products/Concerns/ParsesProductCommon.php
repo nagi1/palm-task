@@ -83,4 +83,34 @@ trait ParsesProductCommon
     {
         return $value !== null && is_numeric($value);
     }
+
+    /**
+     * Run a list of resolver closures and return the first non-empty string result.
+     */
+    private function firstNonEmpty(array $resolvers): ?string
+    {
+        foreach ($resolvers as $resolver) {
+            $value = $resolver();
+            if ($value !== null && $value !== '') {
+                return $value;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Try each CSS selector and return the first non-empty text content.
+     */
+    private function firstMatchingText(Crawler $crawler, array $selectors): ?string
+    {
+        foreach ($selectors as $selector) {
+            $text = $this->text($crawler, $selector);
+            if ($text) {
+                return $text;
+            }
+        }
+
+        return null;
+    }
 }
