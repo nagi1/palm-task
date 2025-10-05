@@ -90,7 +90,7 @@ Prerequisites: Git, PHP 8.x + Composer, Node.js 18+, npm, Go 1.22+, MySQL (or us
 
 ### 1. Clone
 ```fish
-git clone git@github.com:nagi1/dev-tickets.git
+git clone git@github.com:nagi1/palm-task.git
 cd dev-tickets
 ```
 
