@@ -21,7 +21,10 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index(['source', 'asin']);
-            $table->index('url');
+            // NOTE: We intentionally do NOT index the full `url` column because at length 2048 (utf8mb4 up to 4 bytes/char)
+            // the index would exceed MySQL's default innodb large prefix limits (max key length 3072 bytes) -> error 1071.
+            // If fast lookup by URL is required later, add a separate hashed column, e.g.:
+            //   $table->string('url_hash', 64)->nullable()->index(); and persist hash('sha256', $url) in the model.
         });
     }
 
