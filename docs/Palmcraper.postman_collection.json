@@ -1,0 +1,155 @@
+{
+  "info": {
+    "name": "Palmcraper API & Rotation Service",
+    "description": "Collection for testing the Laravel backend (products + scrape) and the Go rotation service.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "b6f2d4c3-6e4e-4f9c-9a41-8d6c1a9d0abc"
+  },
+  "item": [
+    {
+      "name": "Backend (Laravel)",
+      "description": "Product listing and scraping endpoints.",
+      "item": [
+        {
+          "name": "List Products",
+            "request": {
+              "method": "GET",
+              "header": [
+                {"key": "Accept", "value": "application/json"}
+              ],
+              "url": {
+                "raw": "{{api_base_url}}/api/products",
+                "host": ["{{api_base_url}}"],
+                "path": ["api", "products"]
+              }
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "exec": [
+                    "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                    "pm.test('JSON response', () => pm.response.to.be.withBody.and.header('Content-Type'));"
+                  ],
+                  "type": "text/javascript"
+                }
+              }
+            ]
+        },
+        {
+          "name": "Scrape Product",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Accept", "value": "application/json"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {"key": "token", "value": "{{auth_token}}", "type": "string"}
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"url\": \"{{sample_product_url}}\"\n}"
+            },
+            "url": {
+              "raw": "{{api_base_url}}/api/scrape",
+              "host": ["{{api_base_url}}"],
+              "path": ["api", "scrape"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if(!pm.collectionVariables.get('auth_token')) {",
+                  "  console.warn('auth_token variable empty – set your Sanctum token in collection variables.');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 201', () => pm.expect([200,201]).to.include(pm.response.code));",
+                  "pm.test('Has JSON body', () => pm.response.to.be.withBody);",
+                  "pm.test('Contains title field', () => { const json = pm.response.json(); pm.expect(json).to.have.property('title'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Rotation Service (Go)",
+      "description": "User-agent / proxy rotation endpoints.",
+      "item": [
+        {
+          "name": "Get Rotation",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Accept", "value": "application/json"}
+            ],
+            "url": {
+              "raw": "{{rotation_base_url}}/v1/rotation",
+              "host": ["{{rotation_base_url}}"],
+              "path": ["v1", "rotation"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Contains user_agent', () => { const json = pm.response.json(); pm.expect(json).to.have.property('user_agent'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{rotation_base_url}}/health-check",
+              "host": ["{{rotation_base_url}}"],
+              "path": ["health-check"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {"key": "api_base_url", "value": "http://127.0.0.1:8000"},
+    {"key": "rotation_base_url", "value": "http://127.0.0.1:8081"},
+    {"key": "auth_token", "value": ""},
+    {"key": "sample_product_url", "value": "https://www.amazon.com/dp/EXAMPLE"}
+  ]
+}
