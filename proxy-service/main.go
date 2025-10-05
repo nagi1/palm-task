@@ -69,7 +69,7 @@ func main() {
     mux := http.NewServeMux()
     mux.HandleFunc("/v1/rotation", rotationHandler(userAgents, proxies, bannedProxies))
     mux.HandleFunc("/v1/ban", banHandler(bannedProxies, banTimeToLive))
-    mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(http.StatusOK) })
+    mux.HandleFunc("/health-check", func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(http.StatusOK) })
 
     startServer(mux, ":8081")
 }
