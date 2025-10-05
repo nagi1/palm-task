@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ProductSource;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -23,5 +24,6 @@ class Product extends Model
     protected $casts = [
         'price' => 'float',
         'raw_payload' => 'array',
+        'source' => ProductSource::class,
     ];
 }
